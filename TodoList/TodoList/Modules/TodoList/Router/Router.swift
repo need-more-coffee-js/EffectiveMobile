@@ -13,6 +13,7 @@ typealias EntryPoint = TodoListViewProtocol & UIViewController
 protocol TodoListRouterProtocol: AnyObject {
     var entry: EntryPoint? { get }
     static func start() -> TodoListRouterProtocol
+    func openTaskEditor(from vc: UIViewController, task: TodoItem?)
 }
 
 class TodoListRouter: TodoListRouterProtocol {
@@ -33,6 +34,13 @@ class TodoListRouter: TodoListRouterProtocol {
         router.entry = view
         
         return router
+    }
+}
+
+extension TodoListRouter {
+    func openTaskEditor(from vc: UIViewController, task: TodoItem?) {
+        let editorVC = TaskEditorRouter.start(with: task)
+        vc.navigationController?.pushViewController(editorVC, animated: true)
     }
 }
 

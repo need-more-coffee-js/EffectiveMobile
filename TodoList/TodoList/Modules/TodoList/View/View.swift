@@ -61,8 +61,11 @@ class TodoListViewController: UIViewController, TodoListViewProtocol, UITableVie
     }
     
     @objc func addTask() {
-        print("Add task tapped")
+        if (presenter?.router?.entry) != nil {
+            presenter?.router?.openTaskEditor(from: self, task: nil)
+        }
     }
+
     
     
     
@@ -86,5 +89,27 @@ class TodoListViewController: UIViewController, TodoListViewProtocol, UITableVie
         cell.textLabel?.text = todos[indexPath.row].desc
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        let todo = todos[indexPath.row]
+        
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+            let edit = UIAction(title: "Редактировать", image: UIImage(systemName: "pencil")) { _ in
+                self.presenter?.router?.openTaskEditor(from: self, task: todo)
+            }
+
+            let share = UIAction(title: "Поделиться", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                let activity = UIActivityViewController(activityItems: [todo.desc], applicationActivities: nil)
+                self.present(activity, animated: true)
+            }
+
+            let delete = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                print("Удаляем задачу \(todo.desc)")
+            }
+
+            return UIMenu(title: "", children: [edit, share, delete])
+        }
+    }
+
 }
 
