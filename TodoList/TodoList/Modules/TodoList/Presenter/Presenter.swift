@@ -6,11 +6,10 @@
 //
 
 import Foundation
-// protocol
-// ссылка на интерактор
-// ссылка на вью
-// ссфлка на роутер
-// class
+
+enum FetchError: Error {
+    case failed
+}
 
 protocol TodoListPresenterProtocol: AnyObject {
     var router: TodoListRouterProtocol? { get set }
@@ -21,15 +20,17 @@ protocol TodoListPresenterProtocol: AnyObject {
 }
 
 class TodoListPresenter: TodoListPresenterProtocol {
-    var router: (any TodoListRouterProtocol)?
+    var router: TodoListRouterProtocol?
+    var interactor: TodoListInteractorProtocol?
+    var view: TodoListViewProtocol?
     
-    var interactor: (any TodoListInteractorProtocol)?
-    
-    var view: (any TodoListViewProtocol)?
-    
-    func interactorDidFetchTodos(with result: Result<[TodoItem], any Error>) {
-        
+    func interactorDidFetchTodos(with result: Result<[TodoItem], Error>) {
+        switch result {
+        case .success(let items):
+            view?.update(with: items)
+        case .failure(let error):
+            view?.update(with: error)
+        }
     }
-    
-    
 }
+

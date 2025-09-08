@@ -7,26 +7,17 @@
 
 import Foundation
 import UIKit
-// vc
-// protocol
-// ссылка на презентер
-protocol TodoListViewProtocol {
+
+protocol TodoListViewProtocol: AnyObject {
     var presenter: TodoListPresenterProtocol? { get set }
-    
     func update(with todos: [TodoItem])
     func update(with error: Error)
 }
 
 class TodoListViewController: UIViewController, TodoListViewProtocol, UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 0
-    }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return UITableViewCell()
-    }
-    
-    var presenter: (any TodoListPresenterProtocol)?
+    var presenter: TodoListPresenterProtocol?
+    private var todos: [TodoItem] = []
     
     private let tableView: UITableView = {
         let tableView = UITableView()
@@ -37,10 +28,13 @@ class TodoListViewController: UIViewController, TodoListViewProtocol, UITableVie
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .white
         view.addSubview(tableView)
+        
         tableView.delegate = self
         tableView.dataSource = self
-        view.backgroundColor = .red
+        
+        presenter?.interactor?.getTodos()
     }
     
     override func viewDidLayoutSubviews() {
@@ -49,12 +43,23 @@ class TodoListViewController: UIViewController, TodoListViewProtocol, UITableVie
     }
     
     func update(with todos: [TodoItem]) {
-        
+        self.todos = todos
+        tableView.reloadData()
+        tableView.isHidden = false
     }
     
-    func update(with error: any Error) {
-        
+    func update(with error: Error) {
+        print("Failed to fetch todos: \(error)")
     }
     
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return todos.count
+    }
     
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        cell.textLabel?.text = todos[indexPath.row].desc
+        return cell
+    }
 }
+

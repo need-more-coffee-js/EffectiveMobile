@@ -6,7 +6,6 @@
 //
 
 import Foundation
-// model
 
 struct TodoResponse: Codable {
     let todos: [TodoItem]
@@ -16,6 +15,13 @@ struct TodoItem: Codable {
     let id: Int
     let desc: String
     let isCompleted: Bool
-    let createdAt: Date
+    let createdAt: Date?
     
+    enum CodingKeys: String, CodingKey {
+        case id
+        case desc = "todo"
+        case isCompleted = "completed"
+        case createdAt
+    }
 }
+

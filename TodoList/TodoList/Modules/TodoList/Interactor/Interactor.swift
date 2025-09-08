@@ -6,23 +6,32 @@
 //
 
 import Foundation
-// protocol
-// ссылка на презентер
-// class
 
 protocol TodoListInteractorProtocol {
     var presenter: TodoListPresenterProtocol? { get set }
-    
     func getTodos()
-    
 }
 
 class TodoListInteractor: TodoListInteractorProtocol {
-    var presenter: TodoListPresenterProtocol?
+    weak var presenter: TodoListPresenterProtocol?
     
-    func getTodos() {
+    private let apiService: TodoAPIServiceProtocol
+    
+    init(apiService: TodoAPIServiceProtocol = TodoAPIService()) {
+        self.apiService = apiService
     }
     
-    
+    func getTodos() {
+        apiService.fetchTodos { [weak self] items in
+            guard let self = self else { return }
+            
+            if items.isEmpty {
+                self.presenter?.interactorDidFetchTodos(with: .failure(FetchError.failed))
+            } else {
+                self.presenter?.interactorDidFetchTodos(with: .success(items))
+            }
+        }
+    }
 }
+
 
