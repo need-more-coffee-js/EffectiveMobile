@@ -26,24 +26,49 @@ class TodoListViewController: UIViewController, TodoListViewProtocol, UITableVie
         return tableView
     }()
     
+    private let footerView = TodoListFooterView()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
-        view.addSubview(tableView)
-        
-        tableView.delegate = self
-        tableView.dataSource = self
-        
+        setupUI()
         presenter?.interactor?.getTodos()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        tableView.frame = view.bounds
+    func setupUI(){
+        view.backgroundColor = .white
+        view.addSubview(tableView)
+        tableView.delegate = self
+        tableView.dataSource = self
+        
+        tableView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview().inset(120)
+        }
+        
+        view.addSubview(footerView)
+        footerView.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview()
+        }
+
+        footerView.onAddTapped = { [weak self] in
+            self?.addTask()
+        }
+        
+        title = "Задачи"
+        navigationController?.navigationBar.prefersLargeTitles = true
+
     }
+    
+    @objc func addTask() {
+        print("Add task tapped")
+    }
+    
+    
     
     func update(with todos: [TodoItem]) {
         self.todos = todos
+        footerView.updateTasksCount(todos.count)
         tableView.reloadData()
         tableView.isHidden = false
     }
