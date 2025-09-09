@@ -34,16 +34,24 @@ final class TaskEditorPresenter: TaskEditorPresenterProtocol {
 
     func didTapSave(title: String?, description: String?) {
         guard let title = title, !title.isEmpty else { return }
-
+        
         switch task {
         case let task? where task.uuid != nil:
-            interactor?.saveTask(todo: task, newTitle: title, isCompleted: task.isCompleted)
+            interactor?.saveTask(todo: task,
+                                 newTitle: title,
+                                 newDescription: description ?? "",
+                                 isCompleted: task.isCompleted)
         case let task?:
-            interactor?.saveTask(id: task.apiId, title: title, description: description ?? "")
+            interactor?.saveTask(id: task.apiId,
+                                 title: title,
+                                 description: description ?? "")
         case nil:
-            interactor?.saveTask(id: nil, title: title, description: description ?? "")
+            interactor?.saveTask(id: nil,
+                                 title: title,
+                                 description: description ?? "")
         }
     }
+
 }
 
 // MARK: - Interactor Output

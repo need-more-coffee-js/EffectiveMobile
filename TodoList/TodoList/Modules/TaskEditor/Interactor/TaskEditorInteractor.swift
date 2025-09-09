@@ -9,7 +9,7 @@ import Foundation
 protocol TaskEditorInteractorProtocol: AnyObject {
     var presenter: TaskEditorInteractorOutputProtocol? { get set }
     func saveTask(id: Int?, title: String, description: String)
-    func saveTask(todo: TodoItem, newTitle: String, isCompleted: Bool)
+    func saveTask(todo: TodoItem, newTitle: String, newDescription: String, isCompleted: Bool)
 }
 
 protocol TaskEditorInteractorOutputProtocol: AnyObject {
@@ -26,19 +26,19 @@ final class TaskEditorInteractor: TaskEditorInteractorProtocol {
 
     func saveTask(id: Int?, title: String, description: String) {
         if let id = id {
-            print("Заглушка для API-задач с id: \(id)")
+            print("заглушка для api-задач с (id: \(id))")
         } else {
-            coreDataService.saveItem(title: title, isCompleted: false, uuid: nil)
+            coreDataService.saveItem(title: title, description: description, isCompleted: false, uuid: nil)
             presenter?.didSaveTask()
         }
     }
 
-    func saveTask(todo: TodoItem, newTitle: String, isCompleted: Bool) {
+    func saveTask(todo: TodoItem, newTitle: String, newDescription: String, isCompleted: Bool) {
         if let uuid = todo.uuid {
-            coreDataService.updateItem(id: uuid, title: newTitle, isCompleted: isCompleted)
+            coreDataService.updateItem(id: uuid, title: newTitle, description: newDescription, isCompleted: isCompleted)
             presenter?.didSaveTask()
         } else {
-            print("Заглушка для API-задач без uuid")
+            print("заглушка для api-задач без uuid")
         }
     }
 }

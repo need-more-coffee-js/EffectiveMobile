@@ -21,7 +21,9 @@ final class TodoListViewController: UIViewController, TodoListViewProtocol {
     private let searchBarView = TodoSearchBarView()
     private let tableView: UITableView = {
         let tableView = UITableView()
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.register(TodoTableViewCell.self, forCellReuseIdentifier: "TodoCell")
+        tableView.separatorStyle = .singleLine
+        tableView.backgroundColor = Colors.backgroundAppColor
         tableView.isHidden = true
         return tableView
     }()
@@ -31,10 +33,10 @@ final class TodoListViewController: UIViewController, TodoListViewProtocol {
         super.viewDidLoad()
         setupUI()
         presenter?.viewDidLoad()
+        view.backgroundColor = Colors.backgroundAppColor
     }
 
     private func setupUI() {
-        view.backgroundColor = .white
         title = "Задачи"
         navigationController?.navigationBar.prefersLargeTitles = true
 
@@ -88,10 +90,14 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.textLabel?.text = todos[indexPath.row].desc
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "TodoCell", for: indexPath) as? TodoTableViewCell else {
+            return UITableViewCell()
+        }
+        let todo = todos[indexPath.row]
+        cell.configure(with: todo)
         return cell
     }
+
 
     func tableView(_ tableView: UITableView,
                    contextMenuConfigurationForRowAt indexPath: IndexPath,

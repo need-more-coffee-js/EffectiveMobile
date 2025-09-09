@@ -15,19 +15,22 @@ struct TodoItem {
     let isCompleted: Bool
     let createdAt: Date?
     let userId: Int?
+    let descriptionTask: String?
     
     init(uuid: UUID? = nil,
          apiId: Int? = nil,
          desc: String,
          isCompleted: Bool,
          createdAt: Date? = nil,
-         userId: Int? = nil) {
+         userId: Int? = nil,
+         descriptionTask: String? = nil) {
         self.uuid = uuid
         self.apiId = apiId
         self.desc = desc
         self.isCompleted = isCompleted
         self.createdAt = createdAt
         self.userId = userId
+        self.descriptionTask = descriptionTask
     }
 }
 
@@ -59,7 +62,8 @@ extension TodoModel {
             desc: desc ?? "",
             isCompleted: isCompleted,
             createdAt: createdAt,
-            userId: Int(userId)
+            userId: Int(userId),
+            descriptionTask: descriptionTask
         )
     }
 }

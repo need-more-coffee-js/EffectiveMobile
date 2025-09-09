@@ -51,7 +51,7 @@ final class TodoListFooterView: UIView {
     }
 
     private func setupUI() {
-        backgroundColor = Colors.footerBackground
+        backgroundColor = Colors.backgroundGray
 
         addSubview(footerStack)
         footerStack.snp.makeConstraints { make in
