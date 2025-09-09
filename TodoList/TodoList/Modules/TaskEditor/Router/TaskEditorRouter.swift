@@ -6,20 +6,15 @@
 //
 import UIKit
 
-protocol TaskEditorRouterProtocol {
+protocol TaskEditorRouterProtocol: AnyObject {
     func dismiss()
 }
 
 final class TaskEditorRouter: TaskEditorRouterProtocol {
-    func dismiss() {
-        if let view = view as? UIViewController {
-            view.navigationController?.popViewController(animated: true)
-        }
-    }
-    
-    weak var view: TaskEditorViewProtocol?
+    weak var viewController: UIViewController?
+    var onSave: (() -> Void)?
 
-    static func start(with task: TodoItem?) -> UIViewController {
+    static func start(with task: TodoItem?, onSave: (() -> Void)? = nil) -> UIViewController {
         let view = TaskEditorViewController()
         let presenter = TaskEditorPresenter(task: task)
         let interactor = TaskEditorInteractor()
@@ -30,8 +25,15 @@ final class TaskEditorRouter: TaskEditorRouterProtocol {
         presenter.interactor = interactor
         presenter.router = router
         interactor.presenter = presenter
-        router.view = view
+        router.viewController = view
+        router.onSave = onSave
 
         return view
     }
+
+    func dismiss() {
+        viewController?.navigationController?.popViewController(animated: true)
+        onSave?()
+    }
 }
+

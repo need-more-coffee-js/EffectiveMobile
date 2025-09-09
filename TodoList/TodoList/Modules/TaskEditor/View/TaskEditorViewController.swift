@@ -10,8 +10,8 @@ import SnapKit
 
 protocol TaskEditorViewProtocol: AnyObject {
     var presenter: TaskEditorPresenterProtocol? { get set }
-    func close()
     func showTask(title: String?, description: String?)
+    func close()
 }
 
 final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
@@ -69,13 +69,13 @@ final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
         presenter?.didTapSave(title: titleField.text, description: descriptionField.text)
     }
 
-    func close() {
-        navigationController?.popViewController(animated: true)
-    }
-
+    // MARK: - View Protocol
     func showTask(title: String?, description: String?) {
         titleField.text = title
         descriptionField.text = description
     }
-}
 
+    func close() {
+        navigationController?.popViewController(animated: true)
+    }
+}

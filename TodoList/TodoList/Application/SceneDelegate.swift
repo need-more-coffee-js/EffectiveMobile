@@ -14,12 +14,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
-        
-        let router = TodoListRouter.start()
-        let initialVC = router.entry
-        
+
+        let initialVC = TodoListRouter.start()
+        let navController = UINavigationController(rootViewController: initialVC)
+
         let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = UINavigationController(rootViewController: initialVC!)
+        window.rootViewController = navController
         self.window = window
         window.makeKeyAndVisible()
         
