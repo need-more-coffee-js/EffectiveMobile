@@ -15,7 +15,7 @@ protocol TodoListViewProtocol: AnyObject {
 }
 
 class TodoListViewController: UIViewController, TodoListViewProtocol, UITableViewDelegate, UITableViewDataSource {
-    
+    private let searchBarView = TodoSearchBarView()
     var presenter: TodoListPresenterProtocol?
     private var todos: [TodoItem] = [] {
         didSet {
@@ -48,16 +48,28 @@ class TodoListViewController: UIViewController, TodoListViewProtocol, UITableVie
     
     func setupUI(){
         view.backgroundColor = .white
+        
+        view.addSubview(searchBarView)
         view.addSubview(tableView)
+        view.addSubview(footerView)
+        
         tableView.delegate = self
         tableView.dataSource = self
         
+        
+        searchBarView.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(44)
+        }
+        
         tableView.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
+            make.top.equalTo(searchBarView.snp.bottom)
+            make.leading.trailing.equalToSuperview()
             make.bottom.equalToSuperview().inset(120)
         }
         
-        view.addSubview(footerView)
+        
         footerView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalToSuperview()
