@@ -5,39 +5,69 @@
 //  Created by Денис Ефименков on 08.09.2025.
 //
 
-import Foundation
 import CoreData
 
 protocol CoreDataServiceProtocol {
     func fetch() -> [TodoModel]
-    func saveItem(_ item: [TodoItem])
+    func saveItem(title: String, isCompleted: Bool, uuid: UUID?)
+    func updateItem(id: UUID, title: String, isCompleted: Bool)
+    func deleteItem(id: UUID)
 }
 
-class CoreDataService: CoreDataServiceProtocol {
+final class CoreDataService: CoreDataServiceProtocol {
     private let context: NSManagedObjectContext
     
-    init(context: NSManagedObjectContext = CoreDataStack.shared.context) {
+    init(context: NSManagedObjectContext) {
         self.context = context
+    }
+    
+    convenience init() {
+        self.init(context: CoreDataStack.shared.context)
     }
     
     func fetch() -> [TodoModel] {
         let request: NSFetchRequest<TodoModel> = TodoModel.fetchRequest()
-        return(try? context.fetch(request)) ?? []
+        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+        return (try? context.fetch(request)) ?? []
     }
     
-    func saveItem(_ item: [TodoItem]){
-        for todoItem in item {
+    func saveItem(title: String, isCompleted: Bool, uuid: UUID? = nil) {
+        if let uuid = uuid, let existing = fetch().first(where: { $0.id == uuid }) {
+            existing.desc = title
+            existing.isCompleted = isCompleted
+        } else {
             let newItem = TodoModel(context: context)
-            newItem.id = UUID()
-            newItem.desc = todoItem.desc
+            newItem.id = uuid ?? UUID()
+            newItem.desc = title
             newItem.createdAt = Date()
-            newItem.isCompleted = todoItem.isCompleted
+            newItem.isCompleted = isCompleted
         }
         saveContext()
     }
+
     
-    func saveContext(){
-        CoreDataStack.shared.saveContext()
+    func updateItem(id: UUID, title: String, isCompleted: Bool) {
+        let request: NSFetchRequest<TodoModel> = TodoModel.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        
+        if let todo = try? context.fetch(request).first {
+            todo.desc = title
+            todo.isCompleted = isCompleted
+            saveContext()
+        }
     }
     
+    func deleteItem(id: UUID) {
+        let request: NSFetchRequest<TodoModel> = TodoModel.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        
+        if let todo = try? context.fetch(request).first {
+            context.delete(todo)
+            saveContext()
+        }
+    }
+    
+    private func saveContext() {
+        CoreDataStack.shared.saveContext()
+    }
 }

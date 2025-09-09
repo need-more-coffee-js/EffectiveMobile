@@ -32,7 +32,7 @@ class TodoAPIService: TodoAPIServiceProtocol {
                 let decoder = JSONDecoder()
                 let items = try decoder.decode(TodoResponse.self, from: data)
                 DispatchQueue.main.async {
-                    completion(items.todos)
+                    completion(items.todos.map { $0.toDomain() })
                 }
             } catch {
                 print("Error decoding: \(error)")

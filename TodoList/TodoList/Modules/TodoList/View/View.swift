@@ -17,7 +17,11 @@ protocol TodoListViewProtocol: AnyObject {
 class TodoListViewController: UIViewController, TodoListViewProtocol, UITableViewDelegate, UITableViewDataSource {
     
     var presenter: TodoListPresenterProtocol?
-    private var todos: [TodoItem] = []
+    private var todos: [TodoItem] = [] {
+        didSet {
+            footerView.updateTasksCount(todos.count)
+        }
+    }
     
     private let tableView: UITableView = {
         let tableView = UITableView()
@@ -32,6 +36,14 @@ class TodoListViewController: UIViewController, TodoListViewProtocol, UITableVie
         super.viewDidLoad()
         setupUI()
         presenter?.interactor?.getTodos()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        presenter?.interactor?.getTodos() 
+        let localTodos = CoreDataService().fetch().map { $0.toDomain() }
+        self.todos = localTodos + self.todos.filter { $0.uuid == nil }
+        tableView.reloadData()
     }
     
     func setupUI(){
@@ -65,13 +77,10 @@ class TodoListViewController: UIViewController, TodoListViewProtocol, UITableVie
             presenter?.router?.openTaskEditor(from: self, task: nil)
         }
     }
-
-    
-    
     
     func update(with todos: [TodoItem]) {
-        self.todos = todos
-        footerView.updateTasksCount(todos.count)
+        let localTodos = CoreDataService().fetch().map { $0.toDomain() }
+        self.todos = localTodos + todos.filter { $0.uuid == nil }
         tableView.reloadData()
         tableView.isHidden = false
     }
@@ -104,7 +113,14 @@ class TodoListViewController: UIViewController, TodoListViewProtocol, UITableVie
             }
 
             let delete = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                print("Удаляем задачу \(todo.desc)")
+                let todo = self.todos[indexPath.row]
+                
+                if let uuid = todo.uuid {
+                    CoreDataService().deleteItem(id: uuid)
+                }
+                
+                self.todos.remove(at: indexPath.row)
+                tableView.deleteRows(at: [indexPath], with: .automatic)
             }
 
             return UIMenu(title: "", children: [edit, share, delete])

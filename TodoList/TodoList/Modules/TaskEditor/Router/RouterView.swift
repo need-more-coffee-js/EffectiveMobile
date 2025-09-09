@@ -6,9 +6,17 @@
 //
 import UIKit
 
-protocol TaskEditorRouterProtocol {}
+protocol TaskEditorRouterProtocol {
+    func dismiss()
+}
 
 final class TaskEditorRouter: TaskEditorRouterProtocol {
+    func dismiss() {
+        if let view = view as? UIViewController {
+            view.navigationController?.popViewController(animated: true)
+        }
+    }
+    
     weak var view: TaskEditorViewProtocol?
 
     static func start(with task: TodoItem?) -> UIViewController {
