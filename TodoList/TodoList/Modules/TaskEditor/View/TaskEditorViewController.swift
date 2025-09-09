@@ -21,6 +21,7 @@ final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
         let tf = UITextField()
         tf.font = TaskEditorStyle.titleFont
         tf.textColor = Colors.textColor
+        tf.placeholder = "Введите заголовок"
         return tf
     }()
     private lazy var dateField: UILabel = {
@@ -33,6 +34,7 @@ final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
         let df = UITextView()
         df.font = TaskEditorStyle.descriptionFont
         df.textColor = Colors.textColor
+        df.backgroundColor = Colors.backgroundAppColor
         return df
     }()
     
@@ -76,7 +78,8 @@ final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
     }
     
     @objc private func didTapClose() {
-        print("close tap")
+        presenter?.didTapSave(title: titleField.text, description: descriptionField.text)
+        close()
     }
 
     // MARK: - View Protocol
