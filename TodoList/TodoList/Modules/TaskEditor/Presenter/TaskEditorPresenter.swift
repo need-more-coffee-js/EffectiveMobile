@@ -28,7 +28,7 @@ final class TaskEditorPresenter: TaskEditorPresenterProtocol {
 
     func viewDidLoad() {
         if let task = task {
-            view?.showTask(title: task.desc, description: "")
+            view?.showTask(title: task.desc, date: task.createdAt, description: "")
         }
     }
 

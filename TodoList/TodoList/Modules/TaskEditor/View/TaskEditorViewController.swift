@@ -10,69 +10,80 @@ import SnapKit
 
 protocol TaskEditorViewProtocol: AnyObject {
     var presenter: TaskEditorPresenterProtocol? { get set }
-    func showTask(title: String?, description: String?)
+    func showTask(title: String?,date: Date?, description: String?)
     func close()
 }
 
 final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
     var presenter: TaskEditorPresenterProtocol?
 
-    private let titleField: UITextField = {
+    private lazy var titleField: UITextField = {
         let tf = UITextField()
-        tf.placeholder = "Заголовок"
-        tf.borderStyle = .roundedRect
+        tf.font = TaskEditorStyle.titleFont
+        tf.textColor = Colors.textColor
         return tf
     }()
-
-    private let descriptionField: UITextField = {
-        let tf = UITextField()
-        tf.placeholder = "Описание"
-        tf.borderStyle = .roundedRect
-        return tf
+    private lazy var dateField: UILabel = {
+        let df = UILabel()
+        df.font = TaskEditorStyle.dateFont
+        df.textColor = Colors.textColor
+        return df
     }()
-
-    private let saveButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Сохранить", for: .normal)
-        return button
+    private lazy var descriptionField: UITextView = {
+        let df = UITextView()
+        df.font = TaskEditorStyle.descriptionFont
+        df.textColor = Colors.textColor
+        return df
+    }()
+    
+    private lazy var textStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [titleField, dateField, descriptionField])
+        stack.axis = .vertical
+        stack.spacing = 16
+        stack.distribution = .fill
+        return stack
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
         setupUI()
         presenter?.viewDidLoad()
     }
-
-    private func setupUI() {
-        view.addSubview(titleField)
-        view.addSubview(descriptionField)
-        view.addSubview(saveButton)
-
-        titleField.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
-            make.leading.trailing.equalToSuperview().inset(16)
-        }
-        descriptionField.snp.makeConstraints { make in
-            make.top.equalTo(titleField.snp.bottom).offset(12)
-            make.leading.trailing.equalToSuperview().inset(16)
-        }
-        saveButton.snp.makeConstraints { make in
-            make.top.equalTo(descriptionField.snp.bottom).offset(24)
-            make.centerX.equalToSuperview()
-        }
-
-        saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
+    
+    private func formatDate(_ date: Date?) -> String {
+        guard let date = date else { return "" }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM/yy"
+        return formatter.string(from: date)
     }
 
-    @objc private func saveTapped() {
-        presenter?.didTapSave(title: titleField.text, description: descriptionField.text)
+    private func setupUI() {
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: "Назад",
+            style: .plain,
+            target: self,
+            action: #selector(didTapClose)
+        )
+        
+        view.backgroundColor = Colors.backgroundAppColor
+        view.addSubview(textStack)
+
+        textStack.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(-30)
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
+        }
+    }
+    
+    @objc private func didTapClose() {
+        print("close tap")
     }
 
     // MARK: - View Protocol
-    func showTask(title: String?, description: String?) {
+    func showTask(title: String?, date: Date?, description: String?) {
         titleField.text = title
         descriptionField.text = description
+        dateField.text = formatDate(date)
     }
 
     func close() {

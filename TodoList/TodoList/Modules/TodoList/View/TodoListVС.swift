@@ -33,7 +33,6 @@ final class TodoListViewController: UIViewController, TodoListViewProtocol {
         super.viewDidLoad()
         setupUI()
         presenter?.viewDidLoad()
-        view.backgroundColor = Colors.backgroundAppColor
     }
 
     private func setupUI() {
