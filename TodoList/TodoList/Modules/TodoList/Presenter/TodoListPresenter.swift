@@ -15,12 +15,18 @@ protocol TodoListPresenterProtocol: AnyObject {
     var view: TodoListViewProtocol? { get set }
     var interactor: TodoListInteractorProtocol? { get set }
     var router: TodoListRouterProtocol? { get set }
+    var todos: [TodoItem] { get }
     
     func viewDidLoad()
     func didSelectAdd()
     func didDelete(todo: TodoItem)
     func didSearch(text: String)
     func didEdit(todo: TodoItem)
+    func didToggleCompleted(todo: TodoItem)
+}
+
+protocol TodoListPresenterOutput: AnyObject {
+    func didFetchTodos(_ todos: [TodoItem])
 }
 
 final class TodoListPresenter: TodoListPresenterProtocol {
@@ -28,7 +34,7 @@ final class TodoListPresenter: TodoListPresenterProtocol {
     var interactor: TodoListInteractorProtocol?
     var router: TodoListRouterProtocol?
 
-    private var todos: [TodoItem] = []
+    private(set) var todos: [TodoItem] = []
 
     func viewDidLoad() {
         interactor?.getTodos()
@@ -55,6 +61,10 @@ final class TodoListPresenter: TodoListPresenterProtocol {
         let filtered = todos.filter { $0.desc.lowercased().contains(text.lowercased()) }
         view?.showTodos(filtered)
     }
+    
+    func didToggleCompleted(todo: TodoItem) {
+        interactor?.toggleCompleted(todo: todo)
+    }
 }
 
 // MARK: - Interactor Output
@@ -68,5 +78,6 @@ extension TodoListPresenter: TodoListInteractorOutputProtocol {
         view?.showError(error)
     }
 }
+
 
 

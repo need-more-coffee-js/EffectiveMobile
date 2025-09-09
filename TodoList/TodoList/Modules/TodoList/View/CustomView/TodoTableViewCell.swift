@@ -11,7 +11,6 @@ import SnapKit
 final class TodoTableViewCell: UITableViewCell {
     
     // MARK: - UI
-    
     private let checkmarkView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 12
@@ -24,33 +23,21 @@ final class TodoTableViewCell: UITableViewCell {
     private let checkmarkImage: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "checkmark")
-        imageView.tintColor = Colors.iconCheckMark
+        imageView.tintColor = .systemYellow
         imageView.isHidden = true
         return imageView
     }()
     
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = TextStyles.taskTitleFont
-        label.textColor = .red
-        label.numberOfLines = 0
-        return label
+    private lazy var checkmarkButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = .clear
+        button.addTarget(self, action: #selector(checkmarkTapped), for: .touchUpInside)
+        return button
     }()
     
-    private let descriptionLabel: UILabel = {
-        let label = UILabel()
-        label.font = TextStyles.taskDescriptionFont
-        label.textColor = Colors.textColor
-        label.numberOfLines = 0
-        return label
-    }()
-    
-    private let dateLabel: UILabel = {
-        let label = UILabel()
-        label.font = TextStyles.taskDateFont
-        label.textColor = Colors.textColor
-        return label
-    }()
+    private let titleLabel = UILabel()
+    private let descriptionLabel = UILabel()
+    private let dateLabel = UILabel()
     
     private lazy var textStack: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [titleLabel, descriptionLabel, dateLabel])
@@ -59,8 +46,10 @@ final class TodoTableViewCell: UITableViewCell {
         return stack
     }()
     
-    // MARK: - Init
+    // MARK: - Callback
+    var onToggleCompleted: (() -> Void)?
     
+    // MARK: - Init
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -70,14 +59,13 @@ final class TodoTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Setup
-    
     private func setupUI() {
-        backgroundColor = Colors.backgroundAppColor
         selectionStyle = .none
+        backgroundColor = Colors.backgroundAppColor
         
         contentView.addSubview(checkmarkView)
         checkmarkView.addSubview(checkmarkImage)
+        checkmarkView.addSubview(checkmarkButton)
         contentView.addSubview(textStack)
         
         checkmarkView.snp.makeConstraints { make in
@@ -91,17 +79,25 @@ final class TodoTableViewCell: UITableViewCell {
             make.width.height.equalTo(14)
         }
         
+        checkmarkButton.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
         textStack.snp.makeConstraints { make in
             make.top.bottom.equalToSuperview().inset(8)
             make.leading.equalTo(checkmarkView.snp.trailing).offset(12)
             make.trailing.equalToSuperview().inset(16)
         }
+        
+        titleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
+        descriptionLabel.font = .systemFont(ofSize: 14)
+        descriptionLabel.textColor = .secondaryLabel
+        dateLabel.font = .systemFont(ofSize: 12)
+        dateLabel.textColor = .tertiaryLabel
     }
     
     // MARK: - Configure
-    
     func configure(with todo: TodoItem) {
-        titleLabel.text = todo.desc
         descriptionLabel.text = todo.descriptionTask?.isEmpty == false ? todo.descriptionTask : "Без описания"
         dateLabel.text = formatDate(todo.createdAt)
         
@@ -120,9 +116,10 @@ final class TodoTableViewCell: UITableViewCell {
             titleLabel.attributedText = nil
             titleLabel.text = todo.desc
             titleLabel.textColor = Colors.textColor
+            descriptionLabel.textColor = Colors.textColor
+            dateLabel.textColor = Colors.textColor
         }
     }
-
     
     private func formatDate(_ date: Date?) -> String {
         guard let date = date else { return "" }
@@ -130,5 +127,11 @@ final class TodoTableViewCell: UITableViewCell {
         formatter.dateFormat = "dd/MM/yy"
         return formatter.string(from: date)
     }
+    
+    // MARK: - Actions
+    @objc private func checkmarkTapped() {
+        onToggleCompleted?()
+    }
 }
+
 

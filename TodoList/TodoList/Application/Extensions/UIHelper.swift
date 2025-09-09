@@ -41,4 +41,11 @@ enum TextStyles {
     static let taskDateFont = UIFont.systemFont(ofSize: 14, weight: .light)
 }
 
+enum TaskEditorStyle{
+    static let titleFont = UIFont.systemFont(ofSize: 34, weight: .bold)
+    static let descriptionFont = UIFont.systemFont(ofSize: 16, weight: .regular)
+    static let dateFont = UIFont.systemFont(ofSize: 12, weight: .light)
+    
+}
+
 

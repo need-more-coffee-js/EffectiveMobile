@@ -11,6 +11,7 @@ protocol TodoListInteractorProtocol: AnyObject {
     var presenter: TodoListInteractorOutputProtocol? { get set }
     func getTodos()
     func delete(todo: TodoItem)
+    func toggleCompleted(todo: TodoItem)
 }
 
 protocol TodoListInteractorOutputProtocol: AnyObject {
@@ -48,6 +49,20 @@ final class TodoListInteractor: TodoListInteractorProtocol {
     func delete(todo: TodoItem) {
         if let uuid = todo.uuid {
             coreDataService.deleteItem(id: uuid)
+        }
+        getTodos()
+    }
+    
+    func toggleCompleted(todo: TodoItem) {
+        if let uuid = todo.uuid {
+            coreDataService.updateItem(
+                id: uuid,
+                title: todo.desc,
+                description: todo.descriptionTask,
+                isCompleted: !todo.isCompleted
+            )
+        } else {
+            print("Заглушка: toggleCompleted для API-задач")
         }
         getTodos()
     }
