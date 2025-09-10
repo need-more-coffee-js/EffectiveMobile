@@ -21,12 +21,12 @@
 ##  Скриншот
 
 <div align="center">
-  <img src="Screenshots/1.png" width="200" />
-  <img src="Screenshots/2.png" width="200" />
-  <img src="Screenshots/3.png" width="200" />
-  <img src="Screenshots/4.png" width="200" />
-  <img src="Screenshots/5.png" width="200" />
-  <img src="Screenshots/6.png" width="200" />
+  <img src="Screenshots/1.jpg" width="200" />
+  <img src="Screenshots/2.PNG" width="200" />
+  <img src="Screenshots/3.PNG" width="200" />
+  <img src="Screenshots/4.PNG" width="200" />
+  <img src="Screenshots/5.PNG" width="200" />
+  <img src="Screenshots/6.PNG" width="200" />
 </div>
 
 ---
