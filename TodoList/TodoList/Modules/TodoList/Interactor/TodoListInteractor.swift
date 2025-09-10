@@ -32,16 +32,20 @@ final class TodoListInteractor: TodoListInteractorProtocol {
     }
 
     func getTodos() {
-        let localTodos = coreDataService.fetch().map { $0.toDomain() }
-
-        apiService.fetchTodos { [weak self] apiTodos in
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-            let combined = localTodos + apiTodos.filter { $0.uuid == nil }
+            let localTodos = self.coreDataService.fetch().map { $0.toDomain() }
 
-            if combined.isEmpty {
-                self.presenter?.didFailFetchingTodos(FetchError.failed)
-            } else {
-                self.presenter?.didFetchTodos(combined)
+            self.apiService.fetchTodos { apiTodos in
+                let combined = localTodos + apiTodos.filter { $0.uuid == nil }
+
+                DispatchQueue.main.async {
+                    if combined.isEmpty {
+                        self.presenter?.didFailFetchingTodos(FetchError.failed)
+                    } else {
+                        self.presenter?.didFetchTodos(combined)
+                    }
+                }
             }
         }
     }
@@ -50,7 +54,7 @@ final class TodoListInteractor: TodoListInteractorProtocol {
         if let uuid = todo.uuid {
             coreDataService.deleteItem(id: uuid)
         }
-        getTodos() 
+        getTodos()
     }
     
     func toggleCompleted(todo: TodoItem) {
