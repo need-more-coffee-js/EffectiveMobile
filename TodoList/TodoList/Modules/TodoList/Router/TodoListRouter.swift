@@ -8,8 +8,6 @@
 import Foundation
 import UIKit
 
-typealias EntryPoint = TodoListViewProtocol & UIViewController
-
 protocol TodoListRouterProtocol: AnyObject {
     func openTaskEditor(onSave: (() -> Void)?)
     func openTaskEditor(with todo: TodoItem, onSave: (() -> Void)?)

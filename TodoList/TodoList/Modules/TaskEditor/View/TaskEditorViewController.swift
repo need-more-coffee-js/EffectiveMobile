@@ -38,7 +38,6 @@ final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
         df.isScrollEnabled = false 
         df.textContainerInset = .zero
         df.textContainer.lineFragmentPadding = 0
-        df.backgroundColor = .red
         return df
     }()
 
@@ -70,19 +69,19 @@ final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
         view.addSubview(descriptionField)
 
         titleField.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview().inset(16)
             make.height.greaterThanOrEqualTo(40)
         }
 
         dateField.snp.makeConstraints { make in
-            make.top.equalTo(titleField.snp.bottom).offset(16)
+            make.top.equalTo(titleField.snp.bottom)
             make.leading.trailing.equalToSuperview().inset(16)
             make.height.greaterThanOrEqualTo(20)
         }
 
         descriptionField.snp.makeConstraints { make in
-            make.top.equalTo(dateField.snp.bottom).offset(16)
+            make.top.equalTo(dateField.snp.bottom)
             make.leading.trailing.equalToSuperview().inset(16)
             make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide).offset(-16)
             make.height.greaterThanOrEqualTo(100)
