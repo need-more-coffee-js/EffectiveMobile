@@ -36,15 +36,17 @@ final class TodoListInteractor: TodoListInteractorProtocol {
             guard let self = self else { return }
             let localTodos = localModels.map { $0.toDomain() }
 
-            self.apiService.fetchTodos { apiTodos in
-                let combined = localTodos + apiTodos.filter { $0.uuid == nil }
-
-                DispatchQueue.main.async {
+            self.apiService.fetchTodos { result in
+                switch result {
+                case .success(let apiTodos):
+                    let combined = localTodos + apiTodos.filter { $0.uuid == nil }
                     if combined.isEmpty {
                         self.presenter?.didFailFetchingTodos(FetchError.failed)
                     } else {
                         self.presenter?.didFetchTodos(combined)
                     }
+                case .failure(let error):
+                    self.presenter?.didFailFetchingTodos(error)
                 }
             }
         }
