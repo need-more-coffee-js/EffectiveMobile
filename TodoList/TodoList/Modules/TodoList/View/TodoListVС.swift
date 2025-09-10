@@ -33,6 +33,7 @@ final class TodoListViewController: UIViewController, TodoListViewProtocol {
         super.viewDidLoad()
         setupUI()
         presenter?.viewDidLoad()
+        hideKeyboardWHentap() 
     }
 
     private func setupUI() {
