@@ -12,7 +12,7 @@ final class TodoSearchBarView: UIView, UISearchBarDelegate {
 
     private let searchBar: UISearchBar = {
         let sb = UISearchBar()
-        sb.placeholder = "Поиск задач..."
+        sb.placeholder = "Search"
         sb.searchBarStyle = .minimal
         return sb
     }()

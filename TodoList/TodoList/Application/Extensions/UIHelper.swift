@@ -48,4 +48,8 @@ enum TaskEditorStyle{
     
 }
 
+enum FooterTextStyles{
+    static let footerFont = UIFont.systemFont(ofSize: 11, weight: .regular)
+}
+
 

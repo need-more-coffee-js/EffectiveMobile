@@ -13,30 +13,20 @@ final class TodoListFooterView: UIView {
     private let tasksCountLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
-        label.font = .systemFont(ofSize: 14, weight: .medium)
-        label.textColor = .white
+        label.font = FooterTextStyles.footerFont
+        label.textColor = Colors.textColor
         label.text = "0 задач"
         return label
     }()
 
     private let addButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("+", for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 28, weight: .bold)
-        button.backgroundColor = .systemYellow
-        button.tintColor = .black
-        button.layer.cornerRadius = 28
-        button.clipsToBounds = true
+        let image = UIImage(systemName: "square.and.pencil")
+        button.setImage(image, for: .normal)
+        button.tintColor = Colors.iconCheckMark
+        button.contentHorizontalAlignment = .fill
+        button.contentVerticalAlignment = .fill
         return button
-    }()
-    
-    private lazy var footerStack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [tasksCountLabel, addButton])
-        stack.axis = .horizontal
-        //stack.spacing = 12
-        stack.alignment = .center
-        stack.distribution = .equalSpacing
-        return stack
     }()
 
     var onAddTapped: (() -> Void)?
@@ -53,10 +43,21 @@ final class TodoListFooterView: UIView {
     private func setupUI() {
         backgroundColor = Colors.backgroundGray
 
-        addSubview(footerStack)
-        footerStack.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(32)
+        addSubview(tasksCountLabel)
+        addSubview(addButton)
+
+        tasksCountLabel.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview()     
         }
+
+        addButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().inset(20)
+            make.firstBaseline.equalTo(tasksCountLabel.snp.firstBaseline)
+            make.height.equalTo(24)
+            make.width.equalTo(30)
+        }
+        
         addButton.addTarget(self, action: #selector(addTapped), for: .touchUpInside)
     }
 
@@ -65,7 +66,7 @@ final class TodoListFooterView: UIView {
     }
 
     func updateTasksCount(_ count: Int) {
-        tasksCountLabel.text = "\(count) задач"
+        tasksCountLabel.text = "\(count) \(count.tasksWord)"
     }
 }
 

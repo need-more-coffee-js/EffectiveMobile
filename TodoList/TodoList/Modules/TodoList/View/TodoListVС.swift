@@ -51,11 +51,12 @@ final class TodoListViewController: UIViewController, TodoListViewProtocol {
         tableView.snp.makeConstraints { make in
             make.top.equalTo(searchBarView.snp.bottom)
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalToSuperview().inset(120)
+            make.bottom.equalTo(footerView.snp.top)
         }
         footerView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalToSuperview()
+            make.height.equalTo(90)
         }
 
         tableView.delegate = self
