@@ -35,15 +35,11 @@ final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
         df.font = TaskEditorStyle.descriptionFont
         df.textColor = Colors.textColor
         df.backgroundColor = Colors.backgroundAppColor
+        df.isScrollEnabled = false 
+        df.textContainerInset = .zero
+        df.textContainer.lineFragmentPadding = 0
+        df.backgroundColor = .red
         return df
-    }()
-    
-    private lazy var textStack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [titleField, dateField, descriptionField])
-        stack.axis = .vertical
-        stack.spacing = 16
-        stack.distribution = .fill
-        return stack
     }()
 
     override func viewDidLoad() {
@@ -68,13 +64,31 @@ final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
         )
         
         view.backgroundColor = Colors.backgroundAppColor
-        view.addSubview(textStack)
 
-        textStack.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(-30)
+        view.addSubview(titleField)
+        view.addSubview(dateField)
+        view.addSubview(descriptionField)
+
+        titleField.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
             make.leading.trailing.equalToSuperview().inset(16)
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            make.height.greaterThanOrEqualTo(40)
         }
+
+        dateField.snp.makeConstraints { make in
+            make.top.equalTo(titleField.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.height.greaterThanOrEqualTo(20)
+        }
+
+        descriptionField.snp.makeConstraints { make in
+            make.top.equalTo(dateField.snp.bottom).offset(16)
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.bottom.lessThanOrEqualTo(view.safeAreaLayoutGuide).offset(-16)
+            make.height.greaterThanOrEqualTo(100)
+        }
+        
+        descriptionField.delegate = self
     }
     
     @objc private func didTapClose() {
@@ -91,5 +105,14 @@ final class TaskEditorViewController: UIViewController, TaskEditorViewProtocol {
 
     func close() {
         navigationController?.popViewController(animated: true)
+    }
+}
+
+extension TaskEditorViewController: UITextViewDelegate {
+    func textViewDidChange(_ textView: UITextView) {
+        UIView.setAnimationsEnabled(false)
+        textView.invalidateIntrinsicContentSize()
+        textView.layoutIfNeeded()
+        UIView.setAnimationsEnabled(true)
     }
 }

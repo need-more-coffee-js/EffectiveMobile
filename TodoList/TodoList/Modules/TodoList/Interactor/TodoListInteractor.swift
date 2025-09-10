@@ -32,9 +32,9 @@ final class TodoListInteractor: TodoListInteractorProtocol {
     }
 
     func getTodos() {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        coreDataService.fetch { [weak self] localModels in
             guard let self = self else { return }
-            let localTodos = self.coreDataService.fetch().map { $0.toDomain() }
+            let localTodos = localModels.map { $0.toDomain() }
 
             self.apiService.fetchTodos { apiTodos in
                 let combined = localTodos + apiTodos.filter { $0.uuid == nil }
@@ -51,24 +51,24 @@ final class TodoListInteractor: TodoListInteractorProtocol {
     }
 
     func delete(todo: TodoItem) {
-        if let uuid = todo.uuid {
-            coreDataService.deleteItem(id: uuid)
+        guard let uuid = todo.uuid else { return }
+
+        coreDataService.deleteItem(id: uuid) { [weak self] in
+            self?.getTodos()
         }
-        getTodos()
     }
     
     func toggleCompleted(todo: TodoItem) {
-        if let uuid = todo.uuid {
-            coreDataService.updateItem(
-                id: uuid,
-                title: todo.desc,
-                description: todo.descriptionTask,
-                isCompleted: !todo.isCompleted
-            )
-        } else {
-            print("Заглушка: toggleCompleted для API-задач")
+        guard let uuid = todo.uuid else { return }
+
+        coreDataService.updateItem(
+            id: uuid,
+            title: todo.desc,
+            description: todo.descriptionTask,
+            isCompleted: !todo.isCompleted
+        ) { [weak self] in
+            self?.getTodos()
         }
-        getTodos()
     }
 }
 

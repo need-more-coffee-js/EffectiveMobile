@@ -49,7 +49,7 @@ struct TodoAPIDTO: Codable {
             apiId: id,
             desc: todo,
             isCompleted: completed,
-            createdAt: nil,
+            createdAt: Date(),
             userId: userId
         )
     }

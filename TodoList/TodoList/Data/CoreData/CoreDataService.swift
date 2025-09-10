@@ -8,88 +8,90 @@
 import CoreData
 
 protocol CoreDataServiceProtocol {
-    func fetch() -> [TodoModel]
-    func saveItem(title: String, description: String?, isCompleted: Bool, uuid: UUID?)
-    func updateItem(id: UUID, title: String, description: String?, isCompleted: Bool)
-    func deleteItem(id: UUID)
+    func fetch(completion: @escaping ([TodoModel]) -> Void)
+    func saveItem(title: String, description: String?, isCompleted: Bool, uuid: UUID?, completion: (() -> Void)?)
+    func updateItem(id: UUID, title: String, description: String?, isCompleted: Bool, completion: (() -> Void)?)
+    func deleteItem(id: UUID, completion: (() -> Void)?)
 }
 
 final class CoreDataService: CoreDataServiceProtocol {
-    private let context: NSManagedObjectContext
+    private let viewContext: NSManagedObjectContext
+    private let backgroundContext: NSManagedObjectContext
 
-    init(context: NSManagedObjectContext = CoreDataStack.shared.context) {
-        self.context = context
+    init(stack: CoreDataStack = .shared) {
+        self.viewContext = stack.context
+        self.backgroundContext = stack.persistentContainer.newBackgroundContext()
     }
 
-    func fetch() -> [TodoModel] {
-        var results: [TodoModel] = []
-        context.performAndWait { 
+    func fetch(completion: @escaping ([TodoModel]) -> Void) {
+        viewContext.perform {
             let request: NSFetchRequest<TodoModel> = TodoModel.fetchRequest()
             request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
-            results = (try? context.fetch(request)) ?? []
+            let results = (try? self.viewContext.fetch(request)) ?? []
+            DispatchQueue.main.async { completion(results) }
         }
-        return results
     }
 
-    func saveItem(title: String, description: String?, isCompleted: Bool, uuid: UUID? = nil) {
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.context.perform {
-                if let uuid = uuid, let existing = self.fetch().first(where: { $0.id == uuid }) {
+    func saveItem(title: String, description: String?, isCompleted: Bool, uuid: UUID?, completion: (() -> Void)?) {
+        backgroundContext.perform { [weak self] in
+            guard let self = self else { return }
+
+            if let uuid = uuid {
+                let request: NSFetchRequest<TodoModel> = TodoModel.fetchRequest()
+                request.predicate = NSPredicate(format: "id == %@", uuid as CVarArg)
+                if let existing = try? self.backgroundContext.fetch(request).first {
                     existing.desc = title
                     existing.descriptionTask = description
                     existing.isCompleted = isCompleted
-                } else {
-                    let newItem = TodoModel(context: self.context)
-                    newItem.id = uuid ?? UUID()
-                    newItem.desc = title
-                    newItem.descriptionTask = description
-                    newItem.createdAt = Date()
-                    newItem.isCompleted = isCompleted
                 }
+            } else {
+                let newItem = TodoModel(context: self.backgroundContext)
+                newItem.id = UUID()
+                newItem.desc = title
+                newItem.descriptionTask = description
+                newItem.createdAt = Date()
+                newItem.isCompleted = isCompleted
+            }
+
+            self.saveContext()
+            DispatchQueue.main.async { completion?() }
+        }
+    }
+
+    func updateItem(id: UUID, title: String, description: String?, isCompleted: Bool, completion: (() -> Void)?) {
+        backgroundContext.perform { [weak self] in
+            guard let self = self else { return }
+            let request: NSFetchRequest<TodoModel> = TodoModel.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            if let todo = try? self.backgroundContext.fetch(request).first {
+                todo.desc = title
+                todo.descriptionTask = description
+                todo.isCompleted = isCompleted
                 self.saveContext()
             }
+            DispatchQueue.main.async { completion?() }
         }
     }
 
-    func updateItem(id: UUID, title: String, description: String?, isCompleted: Bool) {
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.context.perform {
-                let request: NSFetchRequest<TodoModel> = TodoModel.fetchRequest()
-                request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-
-                if let todo = try? self.context.fetch(request).first {
-                    todo.desc = title
-                    todo.descriptionTask = description
-                    todo.isCompleted = isCompleted
-                    self.saveContext()
-                }
+    func deleteItem(id: UUID, completion: (() -> Void)?) {
+        backgroundContext.perform { [weak self] in
+            guard let self = self else { return }
+            let request: NSFetchRequest<TodoModel> = TodoModel.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            if let todo = try? self.backgroundContext.fetch(request).first {
+                self.backgroundContext.delete(todo)
+                self.saveContext()
             }
+            DispatchQueue.main.async { completion?() }
         }
     }
-    
-    func deleteItem(id: UUID) {
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.context.perform {
-                let request: NSFetchRequest<TodoModel> = TodoModel.fetchRequest()
-                request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
 
-                if let todo = try? self.context.fetch(request).first {
-                    self.context.delete(todo)
-                    self.saveContext()
-                }
-            }
-        }
-    }
-    
     private func saveContext() {
-        context.perform {
-            if self.context.hasChanges {
-                do {
-                    try self.context.save()
-                } catch {
-                    print("Failed to save context: \(error)")
-                }
-            }
+        guard backgroundContext.hasChanges else { return }
+        do {
+            try backgroundContext.save()
+        } catch {
+            print("Failed to save context: \(error)")
         }
     }
 }
