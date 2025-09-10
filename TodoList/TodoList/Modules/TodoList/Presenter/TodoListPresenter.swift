@@ -34,7 +34,9 @@ final class TodoListPresenter: TodoListPresenterProtocol {
     var interactor: TodoListInteractorProtocol?
     var router: TodoListRouterProtocol?
 
+    private var allTodos: [TodoItem] = []       
     private(set) var todos: [TodoItem] = []
+    private var currentSearchText: String = ""
 
     func viewDidLoad() {
         interactor?.getTodos()
@@ -58,26 +60,36 @@ final class TodoListPresenter: TodoListPresenterProtocol {
     }
 
     func didSearch(text: String) {
-        let filtered = todos.filter { $0.desc.lowercased().contains(text.lowercased()) }
-        view?.showTodos(filtered)
+        currentSearchText = text
+        filterTodos()
     }
     
     func didToggleCompleted(todo: TodoItem) {
         interactor?.toggleCompleted(todo: todo)
+    }
+
+    private func filterTodos() {
+        if currentSearchText.isEmpty {
+            todos = allTodos
+        } else {
+            todos = allTodos.filter { $0.desc.lowercased().contains(currentSearchText.lowercased()) }
+        }
+        view?.showTodos(todos)
     }
 }
 
 // MARK: - Interactor Output
 extension TodoListPresenter: TodoListInteractorOutputProtocol {
     func didFetchTodos(_ todos: [TodoItem]) {
-        self.todos = todos
-        view?.showTodos(todos)
+        self.allTodos = todos
+        filterTodos()
     }
 
     func didFailFetchingTodos(_ error: Error) {
         view?.showError(error)
     }
 }
+
 
 
 

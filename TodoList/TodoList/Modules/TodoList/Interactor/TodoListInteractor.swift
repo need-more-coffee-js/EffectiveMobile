@@ -50,7 +50,7 @@ final class TodoListInteractor: TodoListInteractorProtocol {
         if let uuid = todo.uuid {
             coreDataService.deleteItem(id: uuid)
         }
-        getTodos()
+        getTodos() 
     }
     
     func toggleCompleted(todo: TodoItem) {
