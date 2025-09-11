@@ -36,41 +36,38 @@ final class TodoListInteractor: TodoListInteractorProtocol {
             guard let self = self else { return }
             let localTodos = localModels.map { $0.toDomain() }
 
-            self.apiService.fetchTodos { result in
+            self.apiService.fetchTodos { [weak self] result in
+                guard let self = self else { return }
                 switch result {
                 case .success(let apiTodos):
-                    let combined = localTodos + apiTodos.filter { $0.uuid == nil }
-                    if combined.isEmpty {
-                        self.presenter?.didFailFetchingTodos(FetchError.failed)
-                    } else {
-                        self.presenter?.didFetchTodos(combined)
-                    }
-                case .failure(let error):
-                    self.presenter?.didFailFetchingTodos(error)
+                    let merged = self.merge(local: localTodos, api: apiTodos)
+                    self.presenter?.didFetchTodos(merged)
+                case .failure:
+                    self.presenter?.didFetchTodos(localTodos)
                 }
             }
         }
     }
 
+    private func merge(local: [TodoItem], api: [TodoItem]) -> [TodoItem] {
+        let localApiIds = Set(local.compactMap { $0.apiId })
+        let filteredApi = api.filter { ($0.apiId != nil) ? !localApiIds.contains($0.apiId!) : true }
+        return local + filteredApi
+    }
+
     func delete(todo: TodoItem) {
         guard let uuid = todo.uuid else { return }
-
-        coreDataService.deleteItem(id: uuid) { [weak self] in
-            self?.getTodos()
-        }
+        coreDataService.deleteItem(id: uuid) { [weak self] in self?.getTodos() }
     }
-    
+
     func toggleCompleted(todo: TodoItem) {
         guard let uuid = todo.uuid else { return }
-
         coreDataService.updateItem(
             id: uuid,
             title: todo.desc,
             description: todo.descriptionTask,
             isCompleted: !todo.isCompleted
-        ) { [weak self] in
-            self?.getTodos()
-        }
+        ) { [weak self] in self?.getTodos() }
     }
 }
 

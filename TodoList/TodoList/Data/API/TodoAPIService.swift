@@ -30,30 +30,28 @@ protocol TodoAPIServiceProtocol {
 class TodoAPIService: TodoAPIServiceProtocol {
     func fetchTodos(completion: @escaping (Result<[TodoItem], TodoAPIError>) -> Void) {
         guard let url = URL(string: "https://dummyjson.com/todos") else {
-            completion(.failure(.invalidURL))
+            DispatchQueue.main.async { completion(.failure(.invalidURL)) }
             return
         }
-        
+
         URLSession.shared.dataTask(with: url) { data, _, error in
+            func finish(_ result: Result<[TodoItem], TodoAPIError>) {
+                DispatchQueue.main.async { completion(result) }
+            }
+
             if let error = error {
-                completion(.failure(.networkError(error)))
-                return
+                return finish(.failure(.networkError(error)))
             }
-            
             guard let data = data else {
-                completion(.failure(.noData))
-                return
+                return finish(.failure(.noData))
             }
-            
+
             do {
-                let decoder = JSONDecoder()
-                let response = try decoder.decode(TodoResponse.self, from: data)
+                let response = try JSONDecoder().decode(TodoResponse.self, from: data)
                 let todos = response.todos.map { $0.toDomain() }
-                DispatchQueue.main.async {
-                    completion(.success(todos))
-                }
+                finish(.success(todos))
             } catch {
-                completion(.failure(.decodingError(error)))
+                finish(.failure(.decodingError(error)))
             }
         }.resume()
     }

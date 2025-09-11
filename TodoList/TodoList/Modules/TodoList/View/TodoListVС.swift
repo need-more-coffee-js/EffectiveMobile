@@ -94,13 +94,10 @@ extension TodoListViewController: UITableViewDelegate, UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "TodoCell", for: indexPath) as? TodoTableViewCell else {
             return UITableViewCell()
         }
-        
-        let todo = presenter?.todos[indexPath.row]
-        if let todo = todo {
-            cell.configure(with: todo)
-            cell.onToggleCompleted = { [weak self] in
-                self?.presenter?.didToggleCompleted(todo: todo)
-            }
+        let todo = todos[indexPath.row]
+        cell.configure(with: todo)
+        cell.onToggleCompleted = { [weak self] in
+            self?.presenter?.didToggleCompleted(todo: todo)
         }
         return cell
     }

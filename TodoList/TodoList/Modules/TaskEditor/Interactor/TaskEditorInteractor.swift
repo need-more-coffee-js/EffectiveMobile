@@ -25,30 +25,24 @@ final class TaskEditorInteractor: TaskEditorInteractorProtocol {
     }
 
     func saveTask(id: Int?, title: String, description: String) {
-        if let id = id {
-            print("заглушка для api-задач с (id: \(id))")
-        } else {
-            coreDataService.saveItem(title: title,
-                                     description: description,
-                                     isCompleted: false,
-                                     uuid: nil) { [weak self] in
-                self?.presenter?.didSaveTask()
-            }
+        coreDataService.saveItem(title: title,
+                                 description: description,
+                                 isCompleted: false,
+                                 uuid: nil) { [weak self] in
+            self?.presenter?.didSaveTask()
         }
     }
 
     func saveTask(todo: TodoItem, newTitle: String, newDescription: String, isCompleted: Bool) {
         if let uuid = todo.uuid {
-            coreDataService.updateItem(
-                id: uuid,
-                title: newTitle,
-                description: newDescription,
-                isCompleted: isCompleted
-            ) { [weak self] in
+            coreDataService.updateItem(id: uuid,
+                                       title: newTitle,
+                                       description: newDescription,
+                                       isCompleted: isCompleted) { [weak self] in
                 self?.presenter?.didSaveTask()
             }
         } else {
-            print("заглушка для api-задач без uuid")
+            saveTask(id: todo.apiId, title: newTitle, description: newDescription)
         }
     }
 }
